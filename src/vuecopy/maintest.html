@@ -1,0 +1,42 @@
+// 計算主餐總數的函數（不包含全素潤餅3吋和蛋素潤餅3吋）
+function calculateDefaultMainQuantityTotal() {
+return bangdong2Mains.reduce((total, main) => {
+if (main.name !== '全素潤餅3吋' && main.name !== '蛋素潤餅3吋') {
+return total + Number(main.quantity);
+} else {
+return total;
+}
+}, 0);
+}
+
+// 計算主餐總數的函數（包含全素潤餅3吋和蛋素潤餅3吋）
+function calculateTotalMainQuantity() {
+return bangdong2Mains.reduce((total, main) => total + Number(main.quantity), 0);
+}
+
+// 監聽主餐的數量變化
+bangdong2Mains.forEach(main => {
+watch(() => main.quantity, (newVal, oldVal) => {
+if (newVal !== oldVal) {
+const diff = Number(newVal) - Number(oldVal);
+
+bangdong2SideDishes.forEach(sideDish => {
+if (main.name === '全素潤餅3吋' || main.name === '蛋素潤餅3吋') {
+// 如果是特定的主餐，那麼只更新對應的配菜
+if (sideDish.name === '酥炸菇菇' || sideDish.name === '芋頭糕' || sideDish.name === '梅汁番茄' || sideDish.name === '鹽水煮蛋' ||
+sideDish.name === '毛豆' || sideDish.name === '玉米') {
+sideDish.quantity = Number(sideDish.quantity) + diff;
+}
+} else if (sideDish.is_default) {
+// 如果是默認的配菜，那麼數量等於所有非特定主餐的總數
+sideDish.quantity = calculateDefaultMainQuantityTotal();
+}
+});
+
+// 更新副主餐的數量為所有主餐的總和
+bangdong2BentoMains.forEach(bentoMain => {
+bentoMain.quantity = calculateTotalMainQuantity();
+});
+}
+});
+});

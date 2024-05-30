@@ -1,0 +1,117 @@
+<q-select outlined v-model="personForm.hometel" type="number" label="訂購人手機" use-input
+  :input-style="{ fontSize: '17px' }" hide-selected fill-input input-debounce="0" :options="hometelOptions"
+  @filter="filterHometel" @input="selectHometel" :loading="loading">
+  <template v-slot:no-option>
+    <q-item>
+      <q-item-section class="text-grey">
+        查無此號碼
+      </q-item-section>
+    </q-item>
+  </template>
+</q-select>
+
+
+// 市話號碼搜尋自動導入其他
+
+const hometelOptions = ref([])
+const isCompilationUserInput2 = ref(true)
+const filterHometel = async (search, update, abort) => {
+if (search.length > 3) {
+const newData = []
+let page = 1
+let totalPages = 1
+
+while (page <= totalPages) { const { data }=await
+  apiAuth.get(`/member/member?sort=id&order=DESC&filter_phone=${search}&page=${page}`) // Update the total number of
+  pages if it hasn't been set yet if (totalPages===1) { totalPages=data.last_page } //
+  newData.push(...data.data.map(item=> `${item.name} ${item.mobile.replace('-', '')}`))
+  newData.push(...data.data.map(item => item.mobile.replace('-', '')))
+  page++
+  }
+
+  update(() => {
+  hometelOptions.value.length = 0
+  hometelOptions.value.push(...newData)
+  })
+  } else {
+  hometelOptions.value.length = 0
+  }
+  }
+
+  const selectHometel = (value) => {
+  // Assuming the value is in the format "telephone#extension"
+  const [hometel, hometel2] = value.target.value.split('#')
+  personForm.hometel = hometel
+  personForm.hometel2 = hometel2
+  }
+
+  let timeoutId = null
+
+  watch(
+  // 監聽personForm.hometel的變化
+  () => personForm.hometel,
+  (newVal, oldVal) => {
+  // 如果tel為空，清空表單中的其他資料
+  if (!newVal) {
+  personForm.name = ''
+  // personForm.email = ''
+  personForm.road = ''
+  personForm.address = ''
+  personForm.address2 = ''
+  personForm.road2 = ''
+  return
+  }
+
+  if (newVal === oldVal) {
+  // 用户未完成输入，不更新
+  return
+  }
+
+  clearTimeout(timeoutId)
+  timeoutId = setTimeout(async () => {
+  try {
+  // 延遲請求的時間（以毫秒為單位）
+  const delay = 100
+
+  // 延遲指定的時間
+  await new Promise(resolve => setTimeout(resolve, delay))
+  // 發送API請求獲取資料
+  const { data } = await apiAuth.get(`/member/member?filter_phone=${newVal}`)
+
+  if (data.data.length > 0) {
+  // 如果找到對應的資料，填入表單中
+  personForm.name = data.data[0].name
+  // personForm.email = data.data[0].email
+  personForm.road = data.data[0].shipping_road
+  personForm.road2 = data.data[0].shipping_address1
+
+  personForm.prefix = data.data[0].telephone_prefix
+  personForm.tel = data.data[0].mobile.replace(/-/g, '')
+  personForm.memberId = data.data[0].id
+  personForm.compilation = data.data[0].payment_tin
+  personForm.company = data.data[0].payment_company
+  personForm.gender = data.data[0].salutation_id.toString()
+
+  isCompilationUserInput2.value = false
+
+  // 導入舊資料縣市
+  const stateObject = await apiAuth.get('localization/division/state')
+  .then(response => response.data.find(item => item.id === data.data[0].shipping_state_id))
+
+  personForm.address = stateObject.name
+  // 導入舊資料區域
+  const cities = await apiAuth.get(`localization/division/city?filter_parent_id=${stateObject.id}`)
+  .then(response => response.data.find(item => item.city_id === data.data[0].shipping_city_id))
+
+  personForm.address2 = cities.name
+  } else {
+  // 如果沒有找到對應的資料，不清空輸入的號碼
+  return
+  }
+  } catch (error) {
+  // 處理錯誤
+  console.error(error)
+  }
+  }, 100)
+  }
+  )

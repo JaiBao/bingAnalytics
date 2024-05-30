@@ -1,0 +1,61 @@
+<template>
+  <div>
+    <q-dialog v-model="compationDialog">
+      <q-card>
+        <q-card-section>
+          <q-item-label>
+            {{ compationDialogTitle }}
+          </q-item-label>
+        </q-card-section>
+        <q-card-section>
+          <q-item-label>
+            {{ compationDialogMessage }}
+          </q-item-label>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn label="Cancel" @click="hideCompationDialog" />
+          <q-btn color="primary" label="OK" @click="confirm" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </div>
+</template>
+<script setup>
+  // 統編搜尋帶入公司名稱
+  watch(() => personForm.compilation, (newVal) => {
+    if (newVal.length === 8) {
+      apiAuth
+        .get(`/member/guin/autocomplete?filter_uniform_invoice_no=${newVal}`)
+        .then((res) => {
+          if (res.data && res.data.length) {
+            // Set the company name
+            personForm.company = res.data[0].name
+
+            // Check if the address should be overwritten
+            const shouldOverwrite = personForm.address || personForm.address2 || personForm.road || personForm.road2
+            if (shouldOverwrite) {
+              this.compationDialog = true
+              this.compationDialogTitle = '確認覆蓋地址'
+              this.compationDialogMessage = '是否要覆蓋已有的地址？'
+              this.confirm = () => {
+                personForm.address = res.data[0].address_parts.full_city
+                personForm.address2 = res.data[0].address_parts.full_district
+                personForm.road = res.data[0].address_parts.full_road_section
+                personForm.road2 = res.data[0].address_parts.after_road_section
+                this.hideCompationDialog()
+              }
+            } else {
+              personForm.address = res.data[0].address_parts.full_city
+              personForm.address2 = res.data[0].address_parts.full_district
+              personForm.road = res.data[0].address_parts.full_road_section
+              personForm.road2 = res.data[0].address_parts.after_road_section
+            }
+          } else {
+            personForm.company = ''
+          }
+        })
+    } else {
+      personForm.company = ''
+    }
+  })
+</script>

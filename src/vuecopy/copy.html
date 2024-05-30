@@ -1,0 +1,68 @@
+<q-dialog v-model="editDialog4">
+  <q-card class="q-gutter-md row items-start  word-break " id="bangdongcard">
+    <div>
+      <h5 style="margin: 0; padding: 0;">{{ bangdong4MainName }}</h5>
+      <div class="row items-center">
+        <q-item v-for="(bangdong4EditMain, index) in bangdong4EditMains" :key="index" class="flex-auto "
+          style="margin: 0; padding: 0;">
+          <q-input v-model="bangdong4EditMain.quantity" :label="bangdong4EditMain.name" outlined type="number"
+            :input-style="{ fontSize: '20px', margin: '0' }" :label-style="{ fontSize: '20px' }"
+            style="width: 130px;" />
+        </q-item>
+      </div>
+    </div>
+    <!-- 飲料 -->
+    <div>
+      <h5 style="margin: 0; padding: 0;">{{ bangdong4DrinkName }}</h5>
+      <div class="row items-center">
+        <q-item v-for="(bangdong4EditDrink, index) in bangdong4EditDrinks" :key="index" class="flex-auto "
+          style="margin: 0; padding: 0;">
+          <q-input v-model="bangdong4EditDrink.quantity" :label="bangdong4EditDrink.name" outlined type="number"
+            :input-style="{ fontSize: '20px', margin: '0' }" :label-style="{ fontSize: '20px' }"
+            style="width: 130px;" />
+        </q-item>
+      </div>
+    </div>
+    <!-- 副主餐 -->
+    <div>
+      <h5 style="margin: 0; padding: 0;">{{ bangdong4BentoMainName }}</h5>
+      <div class="row items-center">
+        <q-item v-for="(bangdong4EditBentoMain, index) in bangdong4EditBentoMains" :key="index" class="flex-auto "
+          style="margin: 0; padding: 0;">
+          <q-input v-model="bangdong4EditBentoMain.quantity" :label="bangdong4EditBentoMain.name" outlined type="number"
+            :input-style="{ fontSize: '20px', margin: '0' }" :label-style="{ fontSize: '20px' }"
+            style="width: 130px;" />
+        </q-item>
+      </div>
+    </div>
+    <!-- 配菜 -->
+    <div>
+      <h5 style="margin: 0; padding: 0;">{{ bangdong4SideDishName }}</h5>
+      <div class="row items-center">
+        <q-item v-for="(bangdong4EditSideDish, index) in bangdong4EditSideDishes" :key="index" class="flex-auto "
+          style="margin: 0; padding: 0;">
+          <q-input v-model="bangdong4EditSideDish.quantity" :label="bangdong4EditSideDish.name" outlined type="number"
+            :input-style="{ fontSize: '20px', margin: '0' }" :label-style="{ fontSize: '20px' }"
+            style="width: 130px;" />
+        </q-item>
+      </div>
+    </div>
+    <!-- 總計 -->
+    <div style="width:100%;padding: 0;margin: 0;height: 30px;">
+      <h5 style="line-height: 0;">{{bangdong4Name}}</h5>
+    </div>
+    <div class="row">
+      <q-input outlined type="number" :input-style="{ fontSize: '20px' }" style="width: 130px;"
+        v-model="bangdong4EditTotalQuantity" label="數量總計" readonly />
+      <q-input outlined type="number" :input-style="{ fontSize: '20px' }" style="width: 130px;"
+        v-model="bangdong4EditTotalQuantityPrice" label="金額總計" readonly />
+    </div>
+    <!-- 按鈕 -->
+    <div class="row justify-end" style="width: 100%;">
+      <q-btn label="取消" color="red" @click="closeEditDialog4" />
+      <q-btn label="儲存" color="primary" @click="saveEditDialog4" />
+
+    </div>
+
+  </q-card>
+</q-dialog>

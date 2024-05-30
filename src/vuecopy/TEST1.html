@@ -1,0 +1,357 @@
+// 素食便當150
+const bangdongVegetarian2Mains = reactive([])
+const bangdongVegetarian2MainName = ref('')
+const bangdongVegetarian2Drinks = reactive([])
+const bangdongVegetarian2DrinkName = ref('')
+const bangdongVegetarian2SideDishes = reactive([])
+const bangdongVegetarian2SideDishName = ref('')
+const bangdongVegetarian2BentoMains = reactive([])
+const bangdongVegetarian2BentoMainName = ref('')
+const bangdongVegetarian2Name = ref('')
+const bangdongVegetarian2Price = ref('')
+const bangdongVegetarian2ProductId = ref('')
+const bangdongVegetarian2MainMealId = ref('')
+const bangdongVegetarian2DrinkId = ref('')
+const bangdongVegetarian2SideDishId = ref('')
+const bangdongVegetarian2BentoMainId = ref('')
+// 抓取素食便當125主餐形成input
+const loadBangdongVegetarian2 = async () => {
+try {
+// 延遲請求的時間（以毫秒為單位）
+const delay = 2000
+
+// 延遲指定的時間
+await new Promise(resolve => setTimeout(resolve, delay))
+const response = await apiAuth.get('catalog/product/1067')
+const productOptions = response.data.product_options
+// 主餐
+const mainMeal = productOptions.main_meal
+const mainMealValues = mainMeal.product_option_values
+
+for (const mainMealValue of mainMealValues) {
+bangdongVegetarian2Mains.push({
+id: mainMealValue.id,
+name: mainMealValue.name,
+quantity: 0
+})
+}
+// 飲料
+const Drink = productOptions.drink
+const DrinkValues = Drink.product_option_values
+
+for (const DrinkValue of DrinkValues) {
+bangdongVegetarian2Drinks.push({
+id: DrinkValue.id,
+name: DrinkValue.name,
+quantity: 0,
+price: DrinkValue.price
+})
+}
+// 配菜
+const sideDish = productOptions.side_dish
+const sideDishValues = sideDish.product_option_values
+
+for (const sideDishValue of sideDishValues) {
+bangdongVegetarian2SideDishes.push({
+id: sideDishValue.id,
+name: sideDishValue.name,
+quantity: 0,
+is_default: sideDishValue.is_default
+})
+}
+// 副主餐
+const bentoMain = productOptions.bento_main
+const bentoMainValues = bentoMain.product_option_values
+for (const bentoMainValue of bentoMainValues) {
+bangdongVegetarian2BentoMains.push({
+id: bentoMainValue.id,
+name: bentoMainValue.name,
+quantity: 0
+})
+}
+// 監聽主餐的數量變化
+bangdongVegetarian2Mains.forEach(main => {
+watch(() => main.quantity, (newVal, oldVal) => {
+if (newVal !== oldVal) {
+// 配菜的數量跟著主餐的數量變化
+bangdongVegetarian2SideDishes.forEach(sideDish => {
+const diff = Number(newVal) - Number(oldVal)
+if (main.name === '123' || main.name === '123') {
+if (sideDish.name === '酥炸菇菇' || sideDish.name === '炸地瓜' || sideDish.name === '水果' || sideDish.name === '手作蛋塔') {
+if (newVal === 0) {
+sideDish.quantity = 0
+} else {
+sideDish.quantity = Number(sideDish.quantity) + diff
+}
+}
+} else if (sideDish.is_default) {
+if (newVal === 0) {
+sideDish.quantity = 0
+} else {
+sideDish.quantity = Number(sideDish.quantity) + diff
+}
+}
+})
+// 副主餐的數量跟著主餐的數量變化
+bangdongVegetarian2BentoMains.forEach(bentoMain => {
+const diff = Number(newVal) - Number(oldVal)
+const newQuantity = Number(bentoMain.quantity) + diff
+
+// 確保副主餐數量不會變成負數
+bentoMain.quantity = newQuantity >= 0 ? newQuantity : 0
+})
+}
+})
+})
+bangdongVegetarian2Name.value = response.data.name
+bangdongVegetarian2MainName.value = mainMeal.name
+bangdongVegetarian2DrinkName.value = Drink.name
+bangdongVegetarian2SideDishName.value = sideDish.name
+bangdongVegetarian2BentoMainName.value = bentoMain.name
+bangdongVegetarian2Price.value = parseInt(response.data.price)
+bangdongVegetarian2ProductId.value = response.data.id
+bangdongVegetarian2MainMealId.value = mainMeal.id
+bangdongVegetarian2DrinkId.value = Drink.id
+bangdongVegetarian2SideDishId.value = sideDish.id
+bangdongVegetarian2BentoMainId.value = bentoMain.id
+} catch (error) {
+console.error(error)
+}
+}
+
+// 計算總數量
+const bangdongVegetarian2TotalQuantity = computed(() => {
+return bangdongVegetarian2Mains.reduce((total, current) => {
+return total + parseInt(current.quantity)
+}, 0) + parseInt(bangdongVegetarian2Arbitrarily.value)
+})
+
+// 計算總價格
+const bangdongVegetarian2TotalQuantityPrice = computed(() => {
+let totalPrice = bangdongVegetarian2TotalQuantity.value * bangdongVegetarian2Price.value
+bangdongVegetarian2Drinks.forEach((drink) => {
+totalPrice += drink.quantity * drink.price
+})
+
+return totalPrice
+})
+// 將資料推進tableRows
+const submitBangdongVegetarian2 = () => {
+const nextId = tableRows.length > 0 ? tableRows[tableRows.length - 1].id + 1 : 1
+
+const row = {
+bentoType: 11,
+id: nextId,
+name: '',
+Main: '',
+drinks: '',
+sideDishes: '',
+bentoMains: '',
+sideDishDefault: '',
+price: bangdongVegetarian2TotalQuantityPrice.value,
+inputs: [],
+productInputs: []
+}
+
+const totalQuantity = bangdongVegetarian2TotalQuantity.value
+// 主餐
+for (const bangdongVegetarian2Main of bangdongVegetarian2Mains) {
+if (bangdongVegetarian2Main.quantity > 0) {
+if (row.Main !== '') {
+row.Main += ','
+}
+
+row.Main += bangdongVegetarian2Main.name + 'x' + parseInt(bangdongVegetarian2Main.quantity).toString()
+// 保留 主餐名稱、主餐ID
+const productInput = {
+productTypeId: bangdongVegetarian2MainMealId.value,
+productTypeName: bangdongVegetarian2MainName.value,
+productType: 'options_with_qty'
+}
+row.productInputs.push(productInput)
+
+const input = {
+id: bangdongVegetarian2Main.id,
+name: bangdongVegetarian2Main.name,
+value: parseInt(bangdongVegetarian2Main.quantity)
+}
+console.log(parseInt(bangdongVegetarian2Main.quantity).toString())
+row.inputs.push(input)
+bangdongVegetarian2Main.quantity = 0
+}
+}
+// 飲料
+for (const bangdongVegetarian2Drink of bangdongVegetarian2Drinks) {
+if (bangdongVegetarian2Drink.quantity > 0) {
+if (row.drinks !== '') {
+row.drinks += ','
+}
+row.drinks += bangdongVegetarian2Drink.name + 'x' + parseInt(bangdongVegetarian2Drink.quantity).toString()
+// 保留飲料名稱、飲料ID
+const productInput = {
+productTypeName: bangdongVegetarian2DrinkName.value,
+productTypeId: bangdongVegetarian2DrinkId.value,
+productType: 'options_with_qty'
+}
+row.productInputs.push(productInput)
+const input = {
+name: bangdongVegetarian2Drink.name,
+value: parseInt(bangdongVegetarian2Drink.quantity)
+}
+row.inputs.push(input)
+bangdongVegetarian2Drink.quantity = 0
+}
+}
+// 配菜
+for (const bangdongVegetarian2SideDish of bangdongVegetarian2SideDishes) {
+if (bangdongVegetarian2SideDish.quantity > 0) {
+if (row.sideDishes !== '') {
+row.sideDishes += ','
+}
+row.sideDishes += bangdongVegetarian2SideDish.name + 'x' + parseInt(bangdongVegetarian2SideDish.quantity).toString()
+// 保留配菜名稱、配菜ID
+const productInput = {
+productTypeName: bangdong1SideDishName.value,
+productTypeId: bangdong1SideDishId.value,
+productType: 'options_with_qty'
+}
+row.productInputs.push(productInput)
+row.sideDishDefault += bangdongVegetarian2SideDish.is_default + ' '
+const input = {
+id: bangdongVegetarian2SideDish.id,
+name: bangdongVegetarian2SideDish.name,
+value: parseInt(bangdongVegetarian2SideDish.quantity),
+is_default: bangdongVegetarian2SideDish.is_default
+}
+row.inputs.push(input)
+bangdongVegetarian2SideDish.quantity = 0
+}
+}
+// 副主餐
+for (const bangdongVegetarian2BentoMain of bangdongVegetarian2BentoMains) {
+if (bangdongVegetarian2BentoMain.quantity > 0) {
+if (row.bentoMains !== '') {
+row.bentoMains += ','
+}
+row.bentoMains += bangdongVegetarian2BentoMain.name + 'x' + parseInt(bangdongVegetarian2BentoMain.quantity).toString()
+// 保留副主餐名稱、副主餐ID
+const productInput = {
+productTypeName: bangdongVegetarian2BentoMainName.value,
+productTypeId: bangdongVegetarian2BentoMainId.value,
+productType: 'options_with_qty'
+}
+row.productInputs.push(productInput)
+
+const input = {
+id: bangdongVegetarian2BentoMain.id,
+name: bangdongVegetarian2BentoMain.name,
+value: parseInt(bangdongVegetarian2BentoMain.quantity)
+}
+row.inputs.push(input)
+bangdongVegetarian2BentoMain.quantity = 0
+}
+}
+// 保留 素食便當125、1003、數量
+const productInput = {
+id: bangdongVegetarian2ProductId.value,
+name: bangdongVegetarian2Name.value,
+value: parseInt(totalQuantity),
+price: bangdongVegetarian2Price.value,
+totalPrice: row.price
+}
+row.productInputs.push(productInput)
+// 保留任搭數量
+if (bangdongVegetarian2Arbitrarily.value > 0) {
+if (row.Main !== '') {
+row.Main += ','
+}
+row.Main += '任意搭配' + 'x' + parseInt(bangdongVegetarian2Arbitrarily.value).toString()
+const input = {
+id: 'bangdongVegetarian2Arbitrarily',
+value: bangdongVegetarian2Arbitrarily.value,
+name: '任意搭配'
+}
+row.inputs.push(input)
+}
+row.name = bangdongVegetarian2Name.value + totalQuantity + '份'
+// 將這個 row 推進 tableRows 中
+tableRows.push(row)
+showbangdongVegetarian2.value = false
+}
+
+// 修改欄位
+const bangdongVegetarian2EditMains = reactive([])
+const bangdongVegetarian2EditDrinks = reactive([])
+const bangdongVegetarian2EditSideDishes = reactive([])
+const bangdongVegetarian2EditBentoMains = reactive([])
+const loadBangdongVegetarian2Edit = async () => {
+try {
+// 延遲請求的時間（以毫秒為單位）
+const delay = 2000
+
+// 延遲指定的時間
+await new Promise(resolve => setTimeout(resolve, delay))
+const response = await apiAuth.get('catalog/product/1067')
+const productOptions = response.data.product_options
+
+// 主餐
+const mainMeal = productOptions.main_meal
+const values = mainMeal.product_option_values
+
+for (const value of values) {
+const bangdongVegetarian2EditMain = {
+id: value.id,
+name: value.name,
+quantity: 0,
+hidenquantity: 0
+}
+bangdongVegetarian2EditMains.push(bangdongVegetarian2EditMain)
+}
+// 飲料
+const Drink = productOptions.drink
+const DrinkValues = Drink.product_option_values
+for (const DrinkValue of DrinkValues) {
+const bangdongVegetarian2EditDrink = {
+id: DrinkValue.id,
+name: DrinkValue.name,
+quantity: 0,
+hidenquantity: 0,
+price: DrinkValue.price
+}
+bangdongVegetarian2EditDrinks.push(bangdongVegetarian2EditDrink)
+}
+// 配菜
+const sideDish = productOptions.side_dish
+const sideDishValues = sideDish.product_option_values
+for (const sideDishValue of sideDishValues) {
+const bangdongVegetarian2EditSideDish = {
+id: sideDishValue.id,
+name: sideDishValue.name,
+quantity: 0,
+hidenquantity: 0,
+is_default: sideDishValue.is_default
+}
+bangdongVegetarian2EditSideDishes.push(bangdongVegetarian2EditSideDish)
+}
+// 副主餐
+const bentoMain = productOptions.bento_main
+const bentoMainValues = bentoMain.product_option_values
+for (const bentoMainValue of bentoMainValues) {
+const bangdongVegetarian2EditBentoMain = {
+id: bentoMainValue.id,
+name: bentoMainValue.name,
+quantity: 0,
+hidenquantity: 0
+}
+bangdongVegetarian2EditBentoMains.push(bangdongVegetarian2EditBentoMain)
+console.log(bangdongVegetarian2EditBentoMain)
+}
+bangdongVegetarian2MainName.value = mainMeal.name
+bangdongVegetarian2DrinkName.value = Drink.name
+bangdongVegetarian2SideDishName.value = sideDish.name
+bangdongVegetarian2BentoMainName.value = bentoMain.name
+bangdongVegetarian2Price.value = parseInt(response.data.price)
+} catch (error) {
+console.error(error)
+}
+}

@@ -1,0 +1,136 @@
+<q-dialog v-model="editDialog" persistent>
+  <q-card>
+    <q-card-section>
+
+      <div>
+        <h5 style="margin: 0; padding: 0;">{{ mainName }}</h5>
+        <div class="row items-center"></div>
+        <q-item v-for="(editMain, index) in editMains" :key="index" class="flex-auto "
+          style="margin: 0; padding: 0;">
+          <q-input v-model="editMain.quantity" :label="editMain.name" outlined type="number"
+            :input-style="{ fontSize: '20px', margin: '0' }" :label-style="{ fontSize: '20px' }" style="width: 130px;" />
+        </q-item>
+      </div>
+
+      <!-- 飲料 -->
+      <div>
+        <h5 style="margin: 0; padding: 0;">{{ drinkName }}</h5>
+        <div class="row items-center"></div>
+        <q-item v-for="(editDrink, index) in editDrinks" :key="index" class="flex-auto "
+          style="margin: 0; padding: 0;">
+          <q-input v-model="editDrink.quantity" :label="editDrink.name" outlined type="number"
+            :input-style="{ fontSize: '20px', margin: '0' }" :label-style="{ fontSize: '20px' }" style="width: 130px;" />
+        </q-item>
+      </div>
+
+      <!-- 配菜 -->
+      <div>
+        <h5 style="margin: 0; padding: 0;">{{ sideDishName }}</h5>
+        <div class="row items-center"></div>
+        <q-item v-for="(editSideDish, index) in editSideDishes" :key="index" class="flex-auto "
+          style="margin: 0; padding: 0;">
+          <q-input v-model="editSideDish.quantity" :label="editSideDish.name" outlined type="number"
+            :input-style="{ fontSize: '20px', margin: '0' }" :label-style="{ fontSize: '20px' }" style="width: 130px;" />
+        </q-item>
+      </div>
+
+      <!-- ... -->
+
+    </q-card-section>
+
+    <q-card-actions align="right">
+      <q-btn label="取消" color="red" @click="closeEditDialog" />
+      <q-btn label="儲存" color="primary" @click="saveEditDialog" />
+    </q-card-actions>
+  </q-card>
+</q-dialog>
+
+<script>
+// General load function
+const loadEdit = async (id) => {
+  try {
+    const response = await apiAuth.get(`catalog/product/${id}`)
+    const productOptions = response.data.product_options
+
+    const editMains = reactive([])
+    const editDrinks = reactive([])
+    const editSideDishes = reactive([])
+    const editBentoMains = reactive([])
+
+    // 主餐
+    const mainMeal = productOptions.main_meal
+    const values = mainMeal.product_option_values
+
+    for (const value of values) {
+      const editMain = {
+        id: value.id,
+        name: value.short_name,
+        quantity: 0,
+        hidenquantity: 0
+      }
+      editMains.push(editMain)
+    }
+
+    // 飲料
+    const Drink = productOptions.drink
+    const DrinkValues = Drink.product_option_values
+    for (const DrinkValue of DrinkValues) {
+      const editDrink = {
+        id: DrinkValue.id,
+        name: DrinkValue.short_name,
+        quantity: 0,
+        hidenquantity: 0
+      }
+      editDrinks.push(editDrink)
+    }
+
+    // 配菜
+    const sideDish = productOptions.side_dish
+    const sideDishValues = sideDish.product_option_values
+    for (const sideDishValue of sideDishValues) {
+      const editSideDish = {
+        id: sideDishValue.id,
+        name: sideDishValue.short_name,
+        quantity: 0,
+        hidenquantity: 0,
+        is_default: sideDishValue.is_default
+      }
+      editSideDishes.push(editSideDish)
+    }
+
+    // 副主餐
+    const bentoMain = productOptions.bento_main
+    const bentoMainValues = bentoMain.product_option_values
+    for (const bentoMainValue of bentoMainValues) {
+      const editBentoMain = {
+        id: bentoMainValue.id,
+        name: bentoMainValue.short_name,
+        quantity: 0,
+        hidenquantity: 0
+      }
+      editBentoMains.push(editBentoMain)
+    }
+
+    // Now you can assign these arrays to the appropriate reactive variables
+    // depending on which product was requested
+
+    if (id === '1001') {
+      // Assign to bangdong1 variables
+      bangdong1EditMains = editMains
+      bangdong1EditDrinks = editDrinks
+      bangdong1EditSideDishes = editSideDishes
+      // ...
+    } else if (id === '1002') {
+      // Assign to bangdong2 variables
+      bangdong2EditMains = editMains
+      bangdong2EditDrinks = editDrinks
+      bangdong2EditSideDishes = editSideDishes
+      bangdong2EditBentoMains = editBentoMains
+      // ...
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+</script>

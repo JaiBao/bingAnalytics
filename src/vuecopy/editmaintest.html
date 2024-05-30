@@ -1,0 +1,37 @@
+<div>
+  <h5 style="margin: 0; padding: 0;">{{ bangdong1DrinkName }}</h5>
+  <div class="row items-center">
+    <q-item v-for="(bangdong1Drink, index) in bangdong1Drinks" :key="index" class="flex-auto "
+      style="margin: 0; padding: 0;">
+      <q-input v-model="bangdong1Drink.quantity" :label="bangdong1Drink.name" outlined type="number"
+        :input-style="{ fontSize: '20px', margin: '0' }" :label-style="{ fontSize: '20px' }" style="width: 130px;" />
+    </q-item>
+  </div>
+</div>
+<script setup>
+  // 抓取招牌便當主餐形成input
+  const loadBangdong1Drink = async () => {
+    try {
+      const response = await apiAuth.get('catalog/product/1001')
+      const productOptions = response.data.product_options
+      // 主餐
+      const Drink = productOptions.drink
+      const DrinkValues = Drink.product_option_values
+
+      for (const DrinkValue of DrinkValues) {
+        bangdong1Drinks.push({
+          id: DrinkValue.id,
+          name: DrinkValue.short_name,
+          quantity: 0
+        })
+      }
+      bangdong1Name.value = response.data.name
+      bangdong1DrinkName.value = Drink.name
+      price.value = parseInt(response.data.price)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  loadBangdong1Drink()
+</script>

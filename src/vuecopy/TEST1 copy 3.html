@@ -1,0 +1,72 @@
+<script>
+  const addOrder = async () => {
+    try {
+      // 導入資料縣市
+      const states = await apiAuth.get('localization/division/state')
+
+      // 搜索
+      const state = states.data.find(s => s.name === personForm.address)
+      const stateId = state.id
+      console.log(stateId)
+
+      // 導入資料區域
+      const cities = await apiAuth.get(`localization/division/city?filter_parent_id=${state.id}`)
+      const city = cities.data.find(c => c.name === personForm.address2)
+      const address2Id = city.city_id
+      console.log(address2Id)
+
+      // 創建訂單產品對象
+      const order_products = {}
+
+      for (const row of tableRows) {
+        let productOptionIndex = 1
+        order_products[row.id] = {
+          product_id: row.productInputs[0].id, // 你的產品ID
+          name: row.productInputs[0].name,
+          quantity: row.productInputs[0].value,
+          final_total: row.productInputs[0].totalPrice,
+          product_options: {}
+        }
+
+        for (const productInput of row.productInputs) {
+          order_products[row.id].product_options[productOptionIndex] = {
+            product_option_id: productInput.productTypeId,
+            name: productInput.productTypeName,
+            product_option_values: []
+          }
+
+          let productOptionValueIndex = 1
+          for (const input of row.inputs) {
+            order_products[row.id].product_options[productOptionIndex].product_option_values[productOptionValueIndex] = {
+              product_option_value_id: input.id,
+              value: input.name,
+              quantity: input.value
+            }
+            productOptionValueIndex++
+          }
+          productOptionIndex++
+        }
+      }
+
+      // 創建訂單對象
+      const order = {
+        ping_method: personForm.pick, // 取貨方式
+        delivery_date_ymd: personForm.getDate, // 送達日
+        delivery_date_hi: personForm.time, // 排單時間
+        delivery_time_range: personForm.time, // 送達時間範圍
+        shipping_road_abbr: personForm.road, // 送達路段
+        personal_name: personForm.name, // 訂購人姓名
+        customer_id: '', // 訂購人會員代號
+        order_products: order_products
+      }
+
+      // 發送訂單到API
+      const response = await apiAuth.post('your_api_endpoint', order)
+      console.log(response.data)
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+</script>
